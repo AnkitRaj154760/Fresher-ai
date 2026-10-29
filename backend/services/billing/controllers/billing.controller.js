@@ -79,7 +79,8 @@ export const verifyPayment = async (req, res) => {
       });
         }
 
-        const genSign = crypto.createHmac("sha256",process.env.RAZORPAY_KEY_SECRET)
+        const secret = (process.env.RAZORPAY_KEY_SECRET || "").trim().replace(/^["']|["']$/g, "") || "IDr5Rt2rGjGdy7KEUgk1ir08";
+        const genSign = crypto.createHmac("sha256", secret)
         .update(`${razorpay_order_id}|${razorpay_payment_id}`).digest("hex")
 
         if(genSign !== razorpay_signature){
