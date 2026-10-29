@@ -1,0 +1,82 @@
+﻿# ============================================
+# FresherAI Monorepo — .gitignore
+# ============================================
+
+# --------------------------
+# Dependencies
+# --------------------------
+node_modules/
+**/node_modules/
+
+# --------------------------
+# Environment Variables (SENSITIVE — never commit)
+# --------------------------
+.env
+**/.env
+.env.*
+**/.env.*
+
+# Keep example env files
+!.env.example
+!**/.env.example
+
+# --------------------------
+# Firebase Service Account Key (SENSITIVE — private key)
+# --------------------------
+**/serviceAccountKey.json
+serviceAccountKey.json
+
+# --------------------------
+# Build Output
+# --------------------------
+dist/
+dist-ssr/
+build/
+**/dist/
+**/build/
+
+# --------------------------
+# File Uploads (resume service)
+# --------------------------
+**/uploads/*
+!**/uploads/.gitkeep
+
+# --------------------------
+# Logs
+# --------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --------------------------
+# OS Files
+# --------------------------
+.DS_Store
+**/.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --------------------------
+# Editor and IDE
+# --------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+
+# --------------------------
+# Misc
+# --------------------------
+*.local
+.cache/
+.temp/
+tmp/
