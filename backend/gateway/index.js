@@ -40,8 +40,6 @@ app.use(cors({
     exposedHeaders: ["Set-Cookie"]
 }));
 
-app.options("*", cors());
-
 app.use(morgan("dev"))
 app.use(cookieParser())
 
