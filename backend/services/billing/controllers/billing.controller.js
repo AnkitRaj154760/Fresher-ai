@@ -17,6 +17,13 @@ export const createOrder = async (req, res) => {
         const userId = req.headers["x-user-id"]
         const plan = PLANS[planId]
 
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized: User ID is required",
+            });
+        }
+
         if (!plan) {
             return res.status(400).json({
                 success: false,
@@ -44,10 +51,11 @@ export const createOrder = async (req, res) => {
         })
 
     } catch (error) {
-        console.log(error)
+        console.error("createOrder error:", error);
         return res.status(500).json({
             success: false,
-            message: "Failed to create order",
+            message: error?.error?.description || error.message || "Failed to create order",
+            details: error?.error || error.message,
         });
     }
 }
@@ -102,10 +110,10 @@ export const verifyPayment = async (req, res) => {
     });
     } catch (error) {
 
-        console.log(error);
+        console.error("verifyPayment error:", error);
 
     if (req.body?.razorpay_order_id) {
-      await Payment.findOneAndUpdate(
+      await Billing.findOneAndUpdate(
         {
           razorpayOrderId: req.body.razorpay_order_id,
         },
@@ -117,7 +125,8 @@ export const verifyPayment = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Payment verification failed",
+      message: error?.error?.description || error.message || "Payment verification failed",
+      details: error?.error || error.message,
     });
 
     }
