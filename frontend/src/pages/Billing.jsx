@@ -48,7 +48,7 @@ function Billing({ user, setUser }) {
                 { planId: plan.title.toLowerCase() })
 
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_To2kKq3ZF7nT3K",
                 amount: result.data.order.amount,
                 currency: result.data.order.currency,
                 name: "FresherAI",
