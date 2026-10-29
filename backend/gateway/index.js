@@ -11,10 +11,36 @@ import { proxyWithHeaders } from "./utils/proxyWithHeaders.js"
 const app = express()
 app.use(express.json())
 
+const rawFrontendUrl = process.env.FRONTEND_URL || "";
+const cleanFrontendUrl = rawFrontendUrl.trim().replace(/\/+$/, "");
+
+const allowedOrigins = [
+    cleanFrontendUrl,
+    "https://fresher-ai-nine.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+].filter(Boolean);
+
 app.use(cors({
-    origin:process.env.FRONTEND_URL,
-    credentials:true
-}))
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+        if (!origin) return callback(null, true);
+        const cleanOrigin = origin.trim().replace(/\/+$/, "");
+        if (
+            allowedOrigins.includes(cleanOrigin) ||
+            cleanOrigin.endsWith(".vercel.app")
+        ) {
+            return callback(null, cleanOrigin);
+        }
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "x-user-id", "x-user-email"],
+    exposedHeaders: ["Set-Cookie"]
+}));
+
+app.options("*", cors());
 
 app.use(morgan("dev"))
 app.use(cookieParser())

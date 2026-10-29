@@ -1,23 +1,39 @@
-import React from 'react'
-import { FiX } from "react-icons/fi";
+import React, { useState } from 'react'
+import { FiX, FiAlertCircle } from "react-icons/fi";
 import { motion } from "motion/react"
 import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../utils/firebase';
 import api from '../utils/axios';
+
 function LoginModel({ onClose ,setUser}) {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleGoogleAuth = async () => {
         try {
-            const result = await signInWithPopup(auth , provider)
-            const token = await result.user.getIdToken()
+            setError("");
+            setLoading(true);
+            const result = await signInWithPopup(auth , provider);
+            const token = await result.user.getIdToken();
 
-            const response = await api.post("/api/auth/login" , {token})
+            const response = await api.post("/api/auth/login" , {token});
           
-            setUser(response?.data?.user)
-            onClose()
-        } catch (error) {
-            console.log(error)
+            setUser(response?.data?.user);
+            onClose();
+        } catch (err) {
+            console.error("Firebase Auth Error:", err);
+            if (err.code === "auth/popup-blocked") {
+                setError("Pop-up blocked by your browser. Look at your browser address bar and click 'Always allow pop-ups for this site', then retry.");
+            } else if (err.code === "auth/unauthorized-domain") {
+                setError("This domain is not authorized in Firebase Console. Please add 'fresher-ai-nine.vercel.app' to Firebase Console > Authentication > Settings > Authorized Domains.");
+            } else if (err.code === "auth/popup-closed-by-user") {
+                setError("Sign-in window was closed before completing.");
+            } else {
+                setError(err.message || "Failed to sign in. Please try again.");
+            }
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -48,19 +64,27 @@ function LoginModel({ onClose ,setUser}) {
                         Continue your AI interview journey
                     </p>
 
-                    <div className='mt-7'>
+                    {error && (
+                        <div className='mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs flex items-start gap-2 leading-relaxed'>
+                            <FiAlertCircle className='shrink-0 mt-0.5 text-red-400' size={14} />
+                            <span>{error}</span>
+                        </div>
+                    )}
+
+                    <div className='mt-6'>
                         <motion.button
-                        onClick={handleGoogleAuth}
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.97 }}
-                            className='w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/15 bg-white/10 backdrop-blur-md hover:border-white/25 hover:bg-white/[0.14] shadow-inner transition-all'
+                            disabled={loading}
+                            onClick={handleGoogleAuth}
+                            whileHover={{ scale: loading ? 1 : 1.04 }}
+                            whileTap={{ scale: loading ? 1 : 0.97 }}
+                            className={`w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/15 bg-white/10 backdrop-blur-md hover:border-white/25 hover:bg-white/[0.14] shadow-inner transition-all ${
+                                loading ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+                            }`}
                         >
                             <FcGoogle size={18}/>
                             <span className='text-white font-medium text-sm'>
-                                Continue with Google
+                                {loading ? "Signing In..." : "Continue with Google"}
                             </span>
-
-
                         </motion.button>
                     </div>
                 </div>
