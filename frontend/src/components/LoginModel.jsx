@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { FiX, FiAlertCircle } from "react-icons/fi";
+import { FiX, FiAlertCircle, FiExternalLink } from "react-icons/fi";
 import { motion } from "motion/react"
 import { FcGoogle } from "react-icons/fc";
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { auth, provider } from '../utils/firebase';
 import api from '../utils/axios';
 
@@ -23,20 +23,39 @@ function LoginModel({ onClose ,setUser}) {
             onClose();
         } catch (err) {
             console.error("Firebase Auth Error:", err);
-            if (err.code === "auth/popup-blocked") {
-                setError("Pop-up blocked by your browser. Look at your browser address bar and click 'Always allow pop-ups for this site', then retry.");
+            if (err.code === "auth/popup-blocked" || err.code === "auth/cancelled-popup-request") {
+                setError("Pop-up blocked by your browser. Redirecting directly to Google Sign-In...");
+                try {
+                    await signInWithRedirect(auth, provider);
+                    return;
+                } catch (redirectErr) {
+                    setError("Pop-up was blocked. Click the button below to sign in using redirect instead.");
+                    setLoading(false);
+                }
             } else if (err.code === "auth/unauthorized-domain") {
-                setError("This domain is not authorized in Firebase Console. Please add 'fresher-ai-nine.vercel.app' to Firebase Console > Authentication > Settings > Authorized Domains.");
+                setError("Domain not authorized in Firebase Console. Please add 'fresher-ai-nine.vercel.app' to Firebase Console > Authentication > Settings > Authorized Domains.");
+                setLoading(false);
             } else if (err.code === "auth/popup-closed-by-user") {
                 setError("Sign-in window was closed before completing.");
+                setLoading(false);
             } else {
                 setError(err.message || "Failed to sign in. Please try again.");
+                setLoading(false);
             }
-        } finally {
-            setLoading(false);
         }
     }
 
+    const handleRedirectAuth = async () => {
+        try {
+            setError("");
+            setLoading(true);
+            await signInWithRedirect(auth, provider);
+        } catch (err) {
+            console.error("Firebase Redirect Error:", err);
+            setError(err.message || "Failed to initiate redirect sign-in.");
+            setLoading(false);
+        }
+    }
 
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md px-4'>
@@ -65,13 +84,23 @@ function LoginModel({ onClose ,setUser}) {
                     </p>
 
                     {error && (
-                        <div className='mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs flex items-start gap-2 leading-relaxed'>
-                            <FiAlertCircle className='shrink-0 mt-0.5 text-red-400' size={14} />
-                            <span>{error}</span>
+                        <div className='mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs flex flex-col gap-2 leading-relaxed'>
+                            <div className='flex items-start gap-2'>
+                                <FiAlertCircle className='shrink-0 mt-0.5 text-red-400' size={14} />
+                                <span>{error}</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleRedirectAuth}
+                                className='mt-1 inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium text-xs transition-colors'
+                            >
+                                <FiExternalLink size={12} />
+                                Sign in via Redirect instead
+                            </button>
                         </div>
                     )}
 
-                    <div className='mt-6'>
+                    <div className='mt-6 space-y-2.5'>
                         <motion.button
                             disabled={loading}
                             onClick={handleGoogleAuth}

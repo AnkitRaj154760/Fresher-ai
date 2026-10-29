@@ -17,6 +17,10 @@ import InterviewReport from './pages/InterviewReport'
 import Roadmap from './pages/Roadmap'
 import Billing from './pages/Billing'
 
+import { getRedirectResult } from 'firebase/auth'
+import { auth } from './utils/firebase'
+import api from './utils/axios'
+
 function App() {
   const [user,setUser]= useState(null)
   const [loading , setLoading] = useState(true)
@@ -24,27 +28,50 @@ function App() {
 
 
   useEffect(()=>{
+    const initAuth = async () => {
+      try {
+        // Handle redirect result if user was redirected from Google Auth
+        const redirectResult = await getRedirectResult(auth);
+        if (redirectResult?.user) {
+          const token = await redirectResult.user.getIdToken();
+          const response = await api.post("/api/auth/login", { token });
+          if (response?.data?.user) {
+            setUser(response.data.user);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("Firebase redirect result error:", err);
+      }
 
-    const getUser = async () => {
-      const data = await getCurrentUser()
-      setUser(data?.user)
-      setLoading(false)
-    }
+      try {
+        const data = await getCurrentUser();
+        setUser(data?.user);
+      } catch (err) {
+        // user not authenticated yet
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    getUser()
-
+    initAuth();
   },[])
 
   useEffect(()=>{
-
+    if (!user) return;
     const getResumeData = async()=>{
-      const result = await getResume()
-      dispatch(setResume(result?.data))
+      try {
+        const result = await getResume()
+        dispatch(setResume(result?.data))
+      } catch (err) {
+        console.log("No resume found or fetch failed:", err);
+      }
     }
 
     getResumeData()
 
-  },[])
+  },[user])
 
 
   if(loading){
