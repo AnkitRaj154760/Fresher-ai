@@ -1,4 +1,5 @@
 # 🚀 FresherAI — AI-Powered Multi-Agent Career & Interview Platform
+  live demo https://fresher-ai-nine.vercel.app/
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Live%20in%20Production-success?style=for-the-badge&logo=render&logoColor=white" alt="Production Status" />
