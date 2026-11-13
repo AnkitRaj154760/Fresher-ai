@@ -17,8 +17,25 @@ function LoginModel({ onClose ,setUser}) {
             const result = await signInWithPopup(auth , provider);
             const token = await result.user.getIdToken();
 
-            const response = await api.post("/api/auth/login" , {token});
-          
+            // Retry up to 3 times with delay — Render free-tier services
+            // can return 429/503 while waking up from sleep.
+            let response;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    response = await api.post("/api/auth/login", { token });
+                    break; // success
+                } catch (axiosErr) {
+                    const status = axiosErr?.response?.status;
+                    if ((status === 429 || status === 503) && attempt < 3) {
+                        // Server is waking up — wait and retry
+                        setError(`Server is waking up, retrying... (${attempt}/3)`);
+                        await new Promise(r => setTimeout(r, 3000 * attempt));
+                    } else {
+                        throw axiosErr; // non-retryable or last attempt
+                    }
+                }
+            }
+
             setUser(response?.data?.user);
             onClose();
         } catch (err) {
@@ -38,8 +55,16 @@ function LoginModel({ onClose ,setUser}) {
             } else if (err.code === "auth/popup-closed-by-user") {
                 setError("Sign-in window was closed before completing.");
                 setLoading(false);
+            } else if (err.code === "auth/too-many-requests") {
+                setError("Too many sign-in attempts. Please wait a few minutes and try again.");
+                setLoading(false);
             } else {
-                setError(err.message || "Failed to sign in. Please try again.");
+                const status = err?.response?.status;
+                if (status === 429 || status === 503) {
+                    setError("Server is starting up. Please wait 30 seconds and try again.");
+                } else {
+                    setError(err.message || "Failed to sign in. Please try again.");
+                }
                 setLoading(false);
             }
         }

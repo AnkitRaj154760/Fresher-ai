@@ -28,6 +28,15 @@ function App() {
 
 
   useEffect(()=>{
+    // Keep Render free-tier services warm by pinging the gateway every 10 min.
+    // Without this, services sleep after 15 min and return 429/503 on first request.
+    const ping = () => api.get("/").catch(() => {});
+    ping(); // ping on mount
+    const interval = setInterval(ping, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [])
+
+  useEffect(()=>{
     const initAuth = async () => {
       try {
         // Handle redirect result if user was redirected from Google Auth
@@ -57,6 +66,15 @@ function App() {
 
     initAuth();
   },[])
+
+  useEffect(()=>{
+    // Keep Render free-tier services warm by pinging the gateway every 10 min.
+    // Without this, services sleep after 15 min and return 429/503 on first request.
+    const ping = () => api.get("/").catch(() => {});
+    ping(); // ping on mount
+    const interval = setInterval(ping, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [])
 
   useEffect(()=>{
     if (!user) return;
