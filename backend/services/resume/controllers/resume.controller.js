@@ -32,7 +32,17 @@ export const uploadResume = async (req,res) => {
 
         const aiResponse = await resumeAgent(resumeText)
 
-        const resumeData = JSON.parse(aiResponse)
+        let resumeData;
+        try {
+            const cleaned = (aiResponse || "")
+                .replace(/```json/gi, "")
+                .replace(/```/g, "")
+                .trim();
+            resumeData = JSON.parse(cleaned);
+        } catch (parseErr) {
+            console.error("Resume JSON Parse Error:", parseErr, aiResponse);
+            throw new Error("AI returned malformed analysis data. Please try again.");
+        }
 
         let resume = await Resume.findOne({userId})
 
