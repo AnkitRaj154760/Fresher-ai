@@ -54,6 +54,11 @@ function Billing({ user, setUser }) {
                 name: "FresherAI",
                 description: `${plan.title} - ${plan.coins} Interview Coins`,
                 order_id: result.data.order.id,
+                prefill: {
+                    name: (user?.name && user.name.trim().length >= 3) ? user.name.trim() : "FresherAI User",
+                    email: user?.email || "user@fresherai.com",
+                    contact: user?.phone || "9999999999"
+                },
 
                 handler: async function (response) {
                     try {
