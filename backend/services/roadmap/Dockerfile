@@ -1,22 +1,18 @@
-FROM node
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*json ./
-
+COPY backend/package*.json ./
 RUN npm install
 
-COPY ./services/roadmap/package*json ./services/roadmap/
-
+COPY backend/services/roadmap/package*.json ./services/roadmap/
 RUN cd services/roadmap && npm install
 
-COPY services/roadmap ./services/roadmap
-
-COPY shared ./shared
+COPY backend/services/roadmap ./services/roadmap
+COPY backend/shared ./shared
 
 WORKDIR /app/services/roadmap
 
 EXPOSE 8004
 
-CMD [ "npm","start" ]
-
+CMD ["npm", "start"]

@@ -1,22 +1,18 @@
-FROM node
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*json ./
-
+COPY backend/package*.json ./
 RUN npm install
 
-COPY ./services/resume/package*json ./services/resume/
-
+COPY backend/services/resume/package*.json ./services/resume/
 RUN cd services/resume && npm install
 
-COPY services/resume ./services/resume
-
-COPY shared ./shared
+COPY backend/services/resume ./services/resume
+COPY backend/shared ./shared
 
 WORKDIR /app/services/resume
 
 EXPOSE 8002
 
-CMD [ "npm","start" ]
-
+CMD ["npm", "start"]

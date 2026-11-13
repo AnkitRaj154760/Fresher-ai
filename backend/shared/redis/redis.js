@@ -5,6 +5,7 @@ import { resolve } from "path"
 // Each service has its own .env. Since ESM imports are hoisted before
 // any code runs, dotenv.config() in index.js fires too late for this
 // shared module. Load the .env from the service's working directory here.
+// In production (Render), env vars are injected directly — dotenv is a no-op.
 dotenv.config({ path: resolve(process.cwd(), ".env") });
 
 const redisUrl = process.env.REDIS_URL;

@@ -1,22 +1,21 @@
-FROM node
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*json ./
-
+# Copy and install backend root deps (shared modules like redis.js need ioredis, dotenv)
+COPY backend/package*.json ./
 RUN npm install
 
-COPY ./gateway/package*json ./gateway/
-
+# Copy and install gateway-specific deps
+COPY backend/gateway/package*.json ./gateway/
 RUN cd gateway && npm install
 
-COPY gateway ./gateway 
-
-COPY shared ./shared
+# Copy source files
+COPY backend/gateway ./gateway
+COPY backend/shared ./shared
 
 WORKDIR /app/gateway
 
 EXPOSE 8000
 
-CMD [ "npm","start" ]
-
+CMD ["npm", "start"]

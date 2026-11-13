@@ -1,22 +1,18 @@
-FROM node
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*json ./
-
+COPY backend/package*.json ./
 RUN npm install
 
-COPY ./services/billing/package*json ./services/billing/
-
+COPY backend/services/billing/package*.json ./services/billing/
 RUN cd services/billing && npm install
 
-COPY services/billing ./services/billing
-
-COPY shared ./shared
+COPY backend/services/billing ./services/billing
+COPY backend/shared ./shared
 
 WORKDIR /app/services/billing
 
-EXPOSE 8004
+EXPOSE 8005
 
-CMD [ "npm","start" ]
-
+CMD ["npm", "start"]
