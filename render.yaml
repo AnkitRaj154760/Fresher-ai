@@ -47,6 +47,8 @@ services:
         sync: false
       - key: REDIS_URL
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
 
   - name: fresherai-interview
     type: web
@@ -59,6 +61,8 @@ services:
       - key: MONGODB_URL
         sync: false
       - key: REDIS_URL
+        sync: false
+      - key: GROQ_API_KEY
         sync: false
 
   - name: fresherai-roadmap
@@ -73,6 +77,10 @@ services:
         sync: false
       - key: REDIS_URL
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
 
   - name: fresherai-billing
     type: web
@@ -84,6 +92,8 @@ services:
         value: 8005
       - key: MONGODB_URL
         sync: false
-      - key: REDIS_URL
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
         sync: false
 
