@@ -1,4 +1,11 @@
 import Redis from "ioredis"
+import dotenv from "dotenv"
+import { resolve } from "path"
+
+// Each service has its own .env. Since ESM imports are hoisted before
+// any code runs, dotenv.config() in index.js fires too late for this
+// shared module. Load the .env from the service's working directory here.
+dotenv.config({ path: resolve(process.cwd(), ".env") });
 
 const redisUrl = process.env.REDIS_URL;
 

@@ -50,7 +50,23 @@ app.get("/" , (req,res)=>{
 })
 
 
-app.use("/api/auth" , proxy(process.env.AUTH_SERVICE_URL))
+app.use("/api/auth", proxy(process.env.AUTH_SERVICE_URL, {
+    proxyReqBodyDecorator: (bodyContent, srcReq) => {
+        // express.json() already parsed the body; re-serialize it so the proxy
+        // can forward it correctly to the auth service instead of sending an empty body.
+        if (srcReq.body && Object.keys(srcReq.body).length > 0) {
+            return JSON.stringify(srcReq.body);
+        }
+        return bodyContent;
+    },
+    proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+        if (srcReq.body && Object.keys(srcReq.body).length > 0) {
+            proxyReqOpts.headers["Content-Type"] = "application/json";
+            proxyReqOpts.headers["Content-Length"] = Buffer.byteLength(JSON.stringify(srcReq.body));
+        }
+        return proxyReqOpts;
+    }
+}))
 app.use("/api/resume" ,isAuth, proxyWithHeaders(process.env.RESUME_SERVICE_URL))
 app.use("/api/interview",isAuth ,proxyWithHeaders(process.env.INTERVIEW_SERVICE_URL))
 app.use("/api/roadmap",isAuth ,proxyWithHeaders(process.env.ROADMAP_SERVICE_URL))
