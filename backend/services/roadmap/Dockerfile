@@ -2,14 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY backend/package*.json ./
+COPY package*.json ./
 RUN npm install
 
-COPY backend/services/roadmap/package*.json ./services/roadmap/
+COPY services/roadmap/package*.json ./services/roadmap/
 RUN cd services/roadmap && npm install
 
-COPY backend/services/roadmap ./services/roadmap
-COPY backend/shared ./shared
+COPY services/roadmap ./services/roadmap
+COPY shared ./shared
 
 WORKDIR /app/services/roadmap
 

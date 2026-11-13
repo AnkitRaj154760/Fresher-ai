@@ -2,14 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY backend/package*.json ./
+COPY package*.json ./
 RUN npm install
 
-COPY backend/services/resume/package*.json ./services/resume/
+COPY services/resume/package*.json ./services/resume/
 RUN cd services/resume && npm install
 
-COPY backend/services/resume ./services/resume
-COPY backend/shared ./shared
+COPY services/resume ./services/resume
+COPY shared ./shared
 
 WORKDIR /app/services/resume
 

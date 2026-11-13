@@ -1,0 +1,89 @@
+services:
+  - name: fresherai-gateway
+    type: web
+    runtime: docker
+    dockerfilePath: ./backend/gateway/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: REDIS_URL
+        sync: false
+      - key: AUTH_SERVICE_URL
+        sync: false
+      - key: RESUME_SERVICE_URL
+        sync: false
+      - key: INTERVIEW_SERVICE_URL
+        sync: false
+      - key: ROADMAP_SERVICE_URL
+        sync: false
+      - key: BILLING_SERVICE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  - name: fresherai-auth
+    type: web
+    runtime: docker
+    dockerfilePath: ./backend/services/auth/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8001
+      - key: MONGODB_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+
+  - name: fresherai-resume
+    type: web
+    runtime: docker
+    dockerfilePath: ./backend/services/resume/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8002
+      - key: MONGODB_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+
+  - name: fresherai-interview
+    type: web
+    runtime: docker
+    dockerfilePath: ./backend/services/interview/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8003
+      - key: MONGODB_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+
+  - name: fresherai-roadmap
+    type: web
+    runtime: docker
+    dockerfilePath: ./backend/services/roadmap/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8004
+      - key: MONGODB_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+
+  - name: fresherai-billing
+    type: web
+    runtime: docker
+    dockerfilePath: ./backend/services/billing/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8005
+      - key: MONGODB_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+
