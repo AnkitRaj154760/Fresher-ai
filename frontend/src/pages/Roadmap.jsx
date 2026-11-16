@@ -58,17 +58,26 @@ function Roadmap({ user, setUser }) {
 
     const handleGenerate = async () => {
         if (!role.trim() || loading) return;
+
+        if ((user?.interviewCoin ?? 0) < 20) {
+            alert(`You need at least 20 coins to generate a roadmap. You currently have ${user?.interviewCoin ?? 0} coins. Please top up in Billing.`);
+            return;
+        }
+
         setLoading(true);
         setError("");
         try {
             try {
-                const coinResponse = await useCoins({ coins: 20, action: "roadmap-builder" })
-                setUser((prev) => ({
-                    ...prev, interviewCoin: coinResponse?.interviewCoin,
-                }))
-            } catch (error) {
-                setLoading(false)
-                alert("Failed to use coins.")
+                const coinResponse = await useCoins({ coins: 20, action: "roadmap-builder" });
+                if (coinResponse?.interviewCoin !== undefined) {
+                    setUser((prev) => ({
+                        ...prev,
+                        interviewCoin: coinResponse.interviewCoin,
+                    }));
+                }
+            } catch (coinError) {
+                setLoading(false);
+                alert(coinError?.response?.data?.message || "Not enough coins to generate roadmap.");
                 return;
             }
 
@@ -77,18 +86,16 @@ function Roadmap({ user, setUser }) {
                 targetPackage,
                 useResume,
                 resume
-            })
-            setRoadmap(response.data.data)
-getAllRoadmaps()
-            setLoading(false)
-
+            });
+            setRoadmap(response.data.data);
+            getAllRoadmaps();
+            setLoading(false);
         } catch (error) {
             console.error("Failed to generate roadmap:", error);
-            setError("Something went wrong while generating your roadmap. Please try again.");
-            setLoading(false)
-
+            setError(error?.response?.data?.message || "Something went wrong while generating your roadmap. Please try again.");
+            setLoading(false);
         }
-    }
+    };
 
 
     return (
