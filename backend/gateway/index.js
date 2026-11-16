@@ -50,7 +50,13 @@ app.get("/" , (req,res)=>{
 })
 
 
-app.use("/api/auth", proxy(process.env.AUTH_SERVICE_URL, {
+const AUTH_URL = process.env.AUTH_SERVICE_URL || "http://localhost:8001";
+const RESUME_URL = process.env.RESUME_SERVICE_URL || "http://localhost:8002";
+const INTERVIEW_URL = process.env.INTERVIEW_SERVICE_URL || "http://localhost:8003";
+const ROADMAP_URL = process.env.ROADMAP_SERVICE_URL || "http://localhost:8004";
+const BILLING_URL = process.env.BILLING_SERVICE_URL || "http://localhost:8005";
+
+app.use("/api/auth", proxy(AUTH_URL, {
     proxyReqBodyDecorator: (bodyContent, srcReq) => {
         // express.json() already parsed the body; re-serialize it so the proxy
         // can forward it correctly to the auth service instead of sending an empty body.
@@ -67,10 +73,10 @@ app.use("/api/auth", proxy(process.env.AUTH_SERVICE_URL, {
         return proxyReqOpts;
     }
 }))
-app.use("/api/resume" ,isAuth, proxyWithHeaders(process.env.RESUME_SERVICE_URL))
-app.use("/api/interview",isAuth ,proxyWithHeaders(process.env.INTERVIEW_SERVICE_URL))
-app.use("/api/roadmap",isAuth ,proxyWithHeaders(process.env.ROADMAP_SERVICE_URL))
-app.use("/api/billing",isAuth ,proxyWithHeaders(process.env.BILLING_SERVICE_URL))
+app.use("/api/resume" ,isAuth, proxyWithHeaders(RESUME_URL))
+app.use("/api/interview",isAuth ,proxyWithHeaders(INTERVIEW_URL))
+app.use("/api/roadmap",isAuth ,proxyWithHeaders(ROADMAP_URL))
+app.use("/api/billing",isAuth ,proxyWithHeaders(BILLING_URL))
 app.get("/api/me", getCurrentUser)
 
 
