@@ -2,17 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy this service's package files
+COPY services/resume/package.json ./package.json
+COPY services/resume/package-lock.json* ./
+RUN npm install --omit=dev
 
-COPY services/resume/package*.json ./services/resume/
-RUN cd services/resume && npm install
-
-COPY services/resume ./services/resume
+# Copy shared utilities and service source
 COPY shared ./shared
-
-WORKDIR /app/services/resume
+COPY services/resume ./
 
 EXPOSE 8002
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

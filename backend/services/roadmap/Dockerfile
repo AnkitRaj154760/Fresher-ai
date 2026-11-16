@@ -2,17 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy this service's package files
+COPY services/roadmap/package.json ./package.json
+COPY services/roadmap/package-lock.json* ./
+RUN npm install --omit=dev
 
-COPY services/roadmap/package*.json ./services/roadmap/
-RUN cd services/roadmap && npm install
-
-COPY services/roadmap ./services/roadmap
+# Copy shared utilities and service source
 COPY shared ./shared
-
-WORKDIR /app/services/roadmap
+COPY services/roadmap ./
 
 EXPOSE 8004
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

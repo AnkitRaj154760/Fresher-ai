@@ -2,17 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy this service's package files
+COPY services/auth/package.json ./package.json
+COPY services/auth/package-lock.json* ./
+RUN npm install --omit=dev
 
-COPY services/auth/package*.json ./services/auth/
-RUN cd services/auth && npm install
-
-COPY services/auth ./services/auth
+# Copy shared utilities and service source
 COPY shared ./shared
-
-WORKDIR /app/services/auth
+COPY services/auth ./
 
 EXPOSE 8001
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

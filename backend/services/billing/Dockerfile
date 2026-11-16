@@ -2,17 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy this service's package files
+COPY services/billing/package.json ./package.json
+COPY services/billing/package-lock.json* ./
+RUN npm install --omit=dev
 
-COPY services/billing/package*.json ./services/billing/
-RUN cd services/billing && npm install
-
-COPY services/billing ./services/billing
+# Copy shared utilities and service source
 COPY shared ./shared
-
-WORKDIR /app/services/billing
+COPY services/billing ./
 
 EXPOSE 8005
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

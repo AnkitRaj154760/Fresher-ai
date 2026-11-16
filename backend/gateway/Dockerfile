@@ -2,20 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Root backend deps (ioredis + dotenv for shared/redis module)
-COPY package*.json ./
-RUN npm install
+# Copy gateway package files
+COPY gateway/package.json ./package.json
+COPY gateway/package-lock.json* ./
+RUN npm install --omit=dev
 
-# Gateway deps
-COPY gateway/package*.json ./gateway/
-RUN cd gateway && npm install
-
-# Source
-COPY gateway ./gateway
+# Copy shared utilities and gateway source
 COPY shared ./shared
-
-WORKDIR /app/gateway
+COPY gateway ./
 
 EXPOSE 8000
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

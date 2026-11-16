@@ -2,17 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# Copy this service's package files
+COPY services/interview/package.json ./package.json
+COPY services/interview/package-lock.json* ./
+RUN npm install --omit=dev
 
-COPY services/interview/package*.json ./services/interview/
-RUN cd services/interview && npm install
-
-COPY services/interview ./services/interview
+# Copy shared utilities and service source
 COPY shared ./shared
-
-WORKDIR /app/services/interview
+COPY services/interview ./
 
 EXPOSE 8003
 
-CMD ["npm", "start"]
+CMD ["node", "index.js"]
