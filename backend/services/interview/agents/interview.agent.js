@@ -12,12 +12,20 @@ export const interviewAgent = async (data) => {
 
         response = await llm.invoke(prompt)
 
-        const cleaned = response.content
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
+        const raw = response.content || "";
+        const cleaned = raw
+            .replace(/```json/gi, "")
+            .replace(/```/g, "")
+            .trim();
 
-        return JSON.parse(cleaned)
+        // Extract JSON array if surrounded by conversational text
+        const firstBracket = cleaned.indexOf('[');
+        const lastBracket = cleaned.lastIndexOf(']');
+        const jsonStr = (firstBracket !== -1 && lastBracket !== -1)
+            ? cleaned.slice(firstBracket, lastBracket + 1)
+            : cleaned;
+
+        return JSON.parse(jsonStr);
     } catch (error) {
         console.log("Interview Agent Parse Error");
         console.log(response?.content ?? error.message);

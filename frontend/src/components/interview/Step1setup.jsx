@@ -55,30 +55,44 @@ function Step1setup({ user, setUser }) {
     }
 
     const start = async () => {
-        setStarting(true)
-        const response = await startInterview({ role, type, useResume, resume })
-
-        if(response){
-            try {
-                
-            const coinResponse = await useCoins({ coins: 50, action: "start-interview" })
-
-            setUser((prev) => ({
-                ...prev, interviewCoin: coinResponse?.interviewCoin,
-            }))
-            } catch (error) {
-                setStarting(false)
-                alert("Failed to use coins.")
+        try {
+            if (!role || !role.trim()) {
+                alert("Please enter a Target Role");
                 return;
             }
 
+            if ((user?.interviewCoin ?? 0) < 50) {
+                alert("You need at least 50 coins to start an interview. Please purchase coins in Billing.");
+                return;
+            }
 
+            setStarting(true);
+            const response = await startInterview({ role: role.trim(), type, useResume, resume });
+
+            if (!response || !response.interviewId) {
+                alert("Failed to start interview. Please try again.");
+                setStarting(false);
+                return;
+            }
+
+            try {
+                const coinResponse = await useCoins({ coins: 50, action: "start-interview" });
+                setUser((prev) => ({
+                    ...prev,
+                    interviewCoin: coinResponse?.interviewCoin,
+                }));
+            } catch (coinError) {
+                console.error("Coin deduction error:", coinError);
+            }
+
+            setStarting(false);
+            navigate(`/interview/${response.interviewId}`);
+        } catch (error) {
+            console.error("Interview start error:", error);
+            alert(error?.response?.data?.message || error.message || "Failed to start interview.");
+            setStarting(false);
         }
-
-        setStarting(false)
-        navigate(`/interview/${response.interviewId}`)
-
-    }
+    };
 
     return (
         <div className='min-h-screen bg-white flex items-center justify-center p-3 sm:p-5'>
