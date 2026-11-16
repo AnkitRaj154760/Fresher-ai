@@ -110,7 +110,7 @@ export const useInterviewCoins = async (req, res) => {
     if (!sessionId) {
       return res.status(401).json({
         success: false,
-        message: "Session cookie missing. Please sign in again.",
+        message: "Unauthorized: Session cookie not found. Please log in again.",
       });
     }
 
@@ -119,7 +119,7 @@ export const useInterviewCoins = async (req, res) => {
     if (!session) {
       return res.status(401).json({
         success: false,
-        message: "Session expired. Please sign in again.",
+        message: "Session expired. Please log in again.",
       });
     }
 
