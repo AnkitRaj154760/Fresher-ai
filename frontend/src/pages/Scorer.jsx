@@ -83,38 +83,55 @@ function Scorer({ user, setUser }) {
 
     const uploadResume = async () => {
         if (!file) {
-            alert("Please select a PDF")
+            alert("Please select a PDF");
+            return;
         }
-        try {
-            setLoading(true)
 
+        if ((user?.interviewCoin ?? 0) < 10) {
+            alert("You need at least 10 interview coins to analyze your resume. Please buy coins in Billing.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            let coinResponse;
             try {
-                const coinResponse = await useCoins({ coins: 10, action: "resume-scorer" })
-                setUser((prev) => ({
-                    ...prev, interviewCoin: coinResponse?.interviewCoin,
-                }))
-            } catch (error) {
-                setLoading(false)
-                alert("Failed to use coins.")
+                coinResponse = await useCoins({ coins: 10, action: "resume-scorer" });
+                if (coinResponse?.interviewCoin !== undefined) {
+                    setUser((prev) => ({
+                        ...prev,
+                        interviewCoin: coinResponse.interviewCoin,
+                    }));
+                }
+            } catch (coinErr) {
+                console.error("Coin deduction error:", coinErr);
+                setLoading(false);
+                alert(coinErr?.response?.data?.message || "Not enough coins to analyze resume.");
                 return;
             }
 
-            const formData = new FormData()
-            formData.append("resume", file)
+            const formData = new FormData();
+            formData.append("resume", file);
 
-            const response = await api.post("/api/resume/upload", formData)
+            const response = await api.post("/api/resume/upload", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
 
-            dispatch(setResume(response?.data?.data))
-            setLoading(false)
-
-
-
+            if (response?.data?.data) {
+                dispatch(setResume(response.data.data));
+            } else {
+                throw new Error("No resume analysis returned.");
+            }
+            setLoading(false);
         } catch (error) {
-            console.log(error)
-            alert("Upload failed")
-            setLoading(false)
+            console.error("Resume upload error:", error);
+            alert(error?.response?.data?.message || error.message || "Resume analysis failed. Please try again.");
+            setLoading(false);
         }
-    }
+    };
     // scorer section
 
     if (resume) return (
