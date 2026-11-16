@@ -66,6 +66,11 @@ app.use("/api/auth", proxy(AUTH_URL, {
         return bodyContent;
     },
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+        // Forward Cookie header so the auth service receives the session cookie
+        if (srcReq.headers.cookie) {
+            proxyReqOpts.headers["Cookie"] = srcReq.headers.cookie;
+        }
+
         if (srcReq.body && Object.keys(srcReq.body).length > 0) {
             proxyReqOpts.headers["Content-Type"] = "application/json";
             proxyReqOpts.headers["Content-Length"] = Buffer.byteLength(JSON.stringify(srcReq.body));
