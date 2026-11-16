@@ -28,10 +28,15 @@ export const login = async (req, res) => {
 
         email: decoded.email,
 
-        name: decoded.name
+        name: decoded.name,
+
+        interviewCoin: 150
 
       });
 
+    } else if (user.interviewCoin === undefined || user.interviewCoin === null) {
+      user.interviewCoin = 150;
+      await user.save();
     }
 
     const sessionId =crypto.randomUUID();
@@ -100,11 +105,25 @@ export const logout = async (req, res) => {
 };
 export const useInterviewCoins = async (req, res) => {
   try {
-const sessionId = req.cookies?.session;
+    const sessionId = req.cookies?.session;
 
-  const session = await redis.get(`session:${sessionId}`)
+    if (!sessionId) {
+      return res.status(401).json({
+        success: false,
+        message: "Session cookie missing. Please sign in again.",
+      });
+    }
 
-  const sessionData = JSON.parse(session);
+    const session = await redis.get(`session:${sessionId}`);
+
+    if (!session) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please sign in again.",
+      });
+    }
+
+    const sessionData = JSON.parse(session);
 
     const { coins, action } = req.body;
 
@@ -124,11 +143,17 @@ const sessionId = req.cookies?.session;
       });
     }
 
+    // Default to 150 coins if user document doesn't have it initialized
+    if (user.interviewCoin === undefined || user.interviewCoin === null) {
+      user.interviewCoin = 150;
+      await user.save();
+    }
+
     // Not enough coins
     if (user.interviewCoin < coins) {
       return res.status(403).json({
         success: false,
-        message: "Not enough interview coins",
+        message: `Not enough interview coins. Required: ${coins}, Available: ${user.interviewCoin}`,
         interviewCoin: user.interviewCoin,
       });
     }
